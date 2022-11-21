@@ -79,8 +79,6 @@ class dicom_viewer_by_dcm_directory:
             plt.show()
             clear_output(wait=True)
     
-    
-    
 
     def get_dcm_file_list(self):
 
