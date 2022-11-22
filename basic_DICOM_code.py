@@ -9,6 +9,7 @@ from pydicom.pixel_data_handlers import util
 import numpy as np
 import matplotlib.pyplot as plt
 
+import ipywidgets
 from IPython.display import clear_output
 
 
@@ -54,17 +55,18 @@ def min_max_scaling(np_array: np.ndarray) -> np.ndarray:
 
         
         
-class dicom_viewer_by_dcm_directory:
-    """
-    dcm_directory_path에 있는 모든 DICOM 파일들을 순서대로 보여준다.
-    """
+class dicom_Viewer:
+
     def __init__(self, dcm_directory_path: str):
         
         self.dcm_directory_path = dcm_directory_path
 
-    
-    def process(self):
         
+    # 순차적으로 3D 영상을 출력한다.
+    def print_sequentially(self):
+        """
+        dcm_directory_path에 있는 모든 DICOM 파일들을 순서대로 보여준다.
+        """
         dcm_file_list = self.get_dcm_file_list()
         dcm_file_list = sorted(dcm_file_list)
         
@@ -78,9 +80,58 @@ class dicom_viewer_by_dcm_directory:
             plt.imshow(dcm_array, cmap='gray')
             plt.show()
             clear_output(wait=True)
+            
+
+            
+    def Slide_viewer(self, especial_slide_number=0):
+
+        # 3D 영상으로부터 2D 슬라이드를 하나 보여준다.
+        def cut_viewer_from_3D_image(idx: int):
+
+            cut_img = img_Tensor[idx, :, :]
+
+            plt.figure(figsize=(12, 12))
+            plt.imshow(cut_img, cmap="gray")
+            plt.title(f"Slide Number: {idx}", fontsize = 25, pad = 20)
+
+            plt.show()
+
+        img_Tensor = self.import_3D_image()
+        Depth = img_Tensor.shape[0] - 1
+
+        ipywidgets.interact(
+            cut_viewer_from_3D_image,
+            idx=ipywidgets.IntSlider(
+                value=especial_slide_number,
+                min=0,
+                max=Depth,
+                layout=ipywidgets.Layout(width='800px', description='Blue handle')
+            )
+        )
+
+            
+            
+    # 미리 2D DICOM 파일들을 가지고 온다.
+    def import_3D_image(self) -> np.ndarray:
+
+        dcm_file_list = self.get_dcm_file_list()
+        dcm_file_list = sorted(dcm_file_list)
+
+        stack_list = []
+
+        for dcm_file in dcm_file_list:
+
+            dcm_file_path = f"{self.dcm_directory_path}/{dcm_file}"
+            dcm_array, _ = get_dicom_metaData_and_image(dcm_file_path)
+            dcm_array = min_max_scaling(dcm_array)
+            stack_list.append(dcm_array)
+
+        return np.array(stack_list)
     
 
-    def get_dcm_file_list(self):
+
+    # DICOM 파일만 가지고 온다.
+    def get_dcm_file_list(self) -> list:
 
         # file의 목록들을 다 가지고 온다.
         file_list = os.listdir(self.dcm_directory_path)
@@ -88,11 +139,9 @@ class dicom_viewer_by_dcm_directory:
         dcm_list = []
 
         for oneFileName in file_list:
-
             end_is_point_dcm = len(re.findall("[.]dcm$", oneFileName))
 
             if end_is_point_dcm == 1:
-
                 dcm_list.append(oneFileName)
 
         return dcm_list
