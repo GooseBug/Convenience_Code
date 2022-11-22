@@ -83,8 +83,13 @@ class dicom_Viewer:
             
 
             
-    def Slide_viewer(self, especial_slide_number=0):
-
+    def Slide_viewer(self, slide_start_point=0):
+        """
+        Slide를 이용하여 영상을 보여준다.
+        ---------------------------------------------------
+        slide_start_point:
+        >>> 슬라이드의 첫 위치
+        """
         # 3D 영상으로부터 2D 슬라이드를 하나 보여준다.
         def cut_viewer_from_3D_image(idx: int):
 
@@ -102,7 +107,7 @@ class dicom_Viewer:
         ipywidgets.interact(
             cut_viewer_from_3D_image,
             idx=ipywidgets.IntSlider(
-                value=especial_slide_number,
+                value=slide_start_point,
                 min=0,
                 max=Depth,
                 layout=ipywidgets.Layout(width='800px', description='Blue handle')
