@@ -16,12 +16,20 @@ from IPython.display import clear_output
 
 class dicom_Viewer:
 
-    def __init__(self, dcm_directory_path: str):
+    def __init__(self, dcm_directory_path: str, title_color: str = "limegreen"):
         """
         설명
         ----------------------------------------------------------------
-        dicom_Viewer는 DICOM이 들어 있는 디렉터리에 대하여,
-        DICOM을 순서대로 출력한다.
+        dicom_Viewer는 DICOM이 들어 있는 디렉터리에 있는 DICOM 들을
+        파일의 이름 순서를 고려하여 원하는 것을 출력한다.
+        ----------------------------------------------------------------
+        
+        
+        파라미터
+        ----------------------------------------------------------------
+        dcm_directory_path: DICOM 파일들이 위치한 디렉터리의 경로
+        title_color: 출력되는 영상의 Title의 색을 정한다.
+        >>> Default: "limegreen"
         ----------------------------------------------------------------
         
         
@@ -36,15 +44,16 @@ class dicom_Viewer:
         ----------------------------------------------------------------
         """
         self.dcm_directory_path = dcm_directory_path
+        self.title_color = title_color
         self.img_arr = None
         self.header_dict = None
         self.only_slide_number = None
-        self.title_color = None
+        
 
         
         
     # 순차적으로 3D 영상을 출력한다.
-    def print_sequentially(self, title_color="white"):
+    def print_sequentially(self):
         """
         dcm_directory_path에 있는 모든 DICOM 파일들을 순서대로 보여준다.
         """
@@ -62,7 +71,6 @@ class dicom_Viewer:
             plt.imshow(dcm_array, cmap='gray')
             
             title = f"Slide number: {slide_num+1}/{total_slide_num}"
-            self.title_color = title_color
             plt.title(title, fontsize = 20, pad = 20, color=self.title_color)
             
             plt.show()
@@ -90,7 +98,6 @@ class dicom_Viewer:
         ).process()
         
         # title 관련 정보 정의
-        self.title_color = title_color
         if self.only_slide_number:
             title = f"Slide Number: {python_idx + 1}"   # 0으로 시작하는 python의 index를 1로 시작하는 directory index로 맞춰준다.
         else:
@@ -111,7 +118,6 @@ class dicom_Viewer:
         self,
         slide_start_point: int = 0,
         only_slide_number: bool = True,
-        title_color = "white"
     ):
         """
         Slide를 이용하여 영상을 보여준다.
@@ -121,15 +127,9 @@ class dicom_Viewer:
         
         only_slide_number:
         >>> title에서 슬라이드의 번호만 보여줄 것인지 여부
-        
-        title_color:
-        >>> Slide에서 title의 색깔
         """
         self.img_arr, self.header_dict = self.extract_need_dicom_information()
         Depth = self.img_arr.shape[0] - 1
-        
-        # title의 색을 정의한다.
-        self.title_color = title_color
         
         # Slide 번호만 출력할 것인지
         self.only_slide_number = only_slide_number
