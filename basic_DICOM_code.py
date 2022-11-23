@@ -29,7 +29,9 @@ class dicom_Viewer:
         ----------------------------------------------------------------
         1) print_sequentially
         >>> 3D 이미지를 File의 이름 순으로 천천히 출력한다.
-        2) Slide_viewer
+        2) print_one_index_slide
+        >>> 슬라이드 순서를 고려하여, 원하는 슬라이드 한 장을 출력한다.
+        3) Slide_viewer
         >>> 3D 이미지를 Slide를 움직여 원하는 형태로 출력한다.
         ----------------------------------------------------------------
         """
@@ -74,12 +76,12 @@ class dicom_Viewer:
         dcm_directory_path에 있는 모든 DICOM 파일 중 idx에 해당하는 이미지 하나를 보여준다.
         """
         # directory는 1부터 시작이나, Python은 0부터 시작이므로 시작 위치를 맞춘다.
-        real_idx = idx-1
+        python_idx = idx-1
         
         # 대상 슬라이드의 경로 정보를 가지고 온다. 
         dcm_file_list = self.get_dcm_file_list()
         dcm_file_list = sorted(dcm_file_list)
-        dcm_file = dcm_file_list[real_idx]
+        dcm_file = dcm_file_list[python_idx]
         dcm_file_path = f"{self.dcm_directory_path}/{dcm_file}"
         
         # DICOM에 대한 필요 정보를 가지고 온다.
@@ -90,11 +92,11 @@ class dicom_Viewer:
         # title 관련 정보 정의
         self.title_color = title_color
         if self.only_slide_number:
-            title = f"Slide Number: {real_idx}"
+            title = f"Slide Number: {python_idx + 1}"   # 0으로 시작하는 python의 index를 1로 시작하는 directory index로 맞춰준다.
         else:
             title = self.make_DICOM_header_info_title(
                 one_header_dict = headerInfo_dict,
-                idx = idx  # 디렉터리 내 슬라이드의 순서를 표기한다.
+                idx = python_idx  # 디렉터리 내 슬라이드의 순서를 표기한다.
             )
         
         plt.figure(figsize=(10, 10))
@@ -168,10 +170,10 @@ class dicom_Viewer:
         
         
         
-    def make_DICOM_header_info_title(self, one_header_dict, idx):
+    def make_DICOM_header_info_title(self, one_header_dict: dict, idx: str):
         
         result = f"""
-        Slide Number: {idx}
+        Slide Number: {idx + 1}
         InstanceNumber: {one_header_dict["InstanceNumber"]}
         ImagePositionPatient: {one_header_dict["ImagePositionPatient"]}
         SliceLocation: {one_header_dict["SliceLocation"]}
