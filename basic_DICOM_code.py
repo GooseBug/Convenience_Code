@@ -42,14 +42,15 @@ class dicom_Viewer:
         
         
     # 순차적으로 3D 영상을 출력한다.
-    def print_sequentially(self):
+    def print_sequentially(self, title_color="white"):
         """
         dcm_directory_path에 있는 모든 DICOM 파일들을 순서대로 보여준다.
         """
         dcm_file_list = self.get_dcm_file_list()
         dcm_file_list = sorted(dcm_file_list)
+        total_slide_num = len(dcm_file_list)
         
-        for dcm_file in dcm_file_list:
+        for slide_num, dcm_file in enumerate(dcm_file_list):
             
             dcm_file_path = f"{self.dcm_directory_path}/{dcm_file}"
             dcm_array, _ = get_dicom_metaData_and_image(dcm_file_path)
@@ -57,8 +58,50 @@ class dicom_Viewer:
             
             plt.figure(figsize=(10, 10))
             plt.imshow(dcm_array, cmap='gray')
+            
+            title = f"Slide number: {slide_num+1}/{total_slide_num}"
+            self.title_color = title_color
+            plt.title(title, fontsize = 20, pad = 20, color=self.title_color)
+            
             plt.show()
             clear_output(wait=True)
+            
+            
+            
+    # 3D 영상 중 특정 index에 대한 Slide 하나를 출력한다.
+    def print_one_index_slide(self, idx, dicom_header_title: bool = False, title_color = "white"):
+        """
+        dcm_directory_path에 있는 모든 DICOM 파일 중 idx에 해당하는 이미지 하나를 보여준다.
+        """
+        # directory는 1부터 시작이나, Python은 0부터 시작이므로 시작 위치를 맞춘다.
+        real_idx = idx-1
+        
+        # 대상 슬라이드의 경로 정보를 가지고 온다. 
+        dcm_file_list = self.get_dcm_file_list()
+        dcm_file_list = sorted(dcm_file_list)
+        dcm_file = dcm_file_list[real_idx]
+        dcm_file_path = f"{self.dcm_directory_path}/{dcm_file}"
+        
+        # DICOM에 대한 필요 정보를 가지고 온다.
+        dcmImage, headerInfo_dict = extract_dicom_information(
+            dcmPath=dcm_file_path
+        ).process()
+        
+        # title 관련 정보 정의
+        self.title_color = title_color
+        if self.only_slide_number:
+            title = f"Slide Number: {real_idx}"
+        else:
+            title = self.make_DICOM_header_info_title(
+                one_header_dict = headerInfo_dict,
+                idx = idx  # 디렉터리 내 슬라이드의 순서를 표기한다.
+            )
+        
+        plt.figure(figsize=(10, 10))
+        plt.imshow(dcmImage, cmap='gray')
+        plt.title(title, fontsize = 20, pad = 20, color=self.title_color)
+        plt.show()
+            
             
 
             
@@ -112,7 +155,10 @@ class dicom_Viewer:
         if self.only_slide_number:
             title = f"Slide Number: {idx}"
         else:
-            title = self.make_DICOM_header_info_title(idx)
+            title = self.make_DICOM_header_info_title(
+                one_header_dict = self.header_dict[idx],
+                idx = idx
+            )
 
         plt.figure(figsize=(10, 10))
         plt.imshow(cut_img, cmap="gray")
@@ -122,16 +168,16 @@ class dicom_Viewer:
         
         
         
-    def make_DICOM_header_info_title(self, idx):
+    def make_DICOM_header_info_title(self, one_header_dict, idx):
         
         result = f"""
         Slide Number: {idx}
-        InstanceNumber: {self.header_dict[idx]["InstanceNumber"]}
-        ImagePositionPatient: {self.header_dict[idx]["ImagePositionPatient"]}
-        SliceLocation: {self.header_dict[idx]["SliceLocation"]}
-        SeriesInstanceUID: {self.header_dict[idx]["SeriesInstanceUID"]}
-        SeriesNumber: {self.header_dict[idx]["SeriesNumber"]}
-        ImageOrientationPatient: {self.header_dict[idx]["ImageOrientationPatient"]}
+        InstanceNumber: {one_header_dict["InstanceNumber"]}
+        ImagePositionPatient: {one_header_dict["ImagePositionPatient"]}
+        SliceLocation: {one_header_dict["SliceLocation"]}
+        SeriesInstanceUID: {one_header_dict["SeriesInstanceUID"]}
+        SeriesNumber: {one_header_dict["SeriesNumber"]}
+        ImageOrientationPatient: {one_header_dict["ImageOrientationPatient"]}
         """
         return result
         
