@@ -16,7 +16,7 @@ from IPython.display import clear_output
 
 class dicom_Viewer:
 
-    def __init__(self, dcm_directory_path: str, title_color: str = "limegreen"):
+    def __init__(self, dcm_directory_path: str, title_color: str = "limegreen", img_size: int = 12):
         """
         설명
         ----------------------------------------------------------------
@@ -30,6 +30,8 @@ class dicom_Viewer:
         dcm_directory_path: DICOM 파일들이 위치한 디렉터리의 경로
         title_color: 출력되는 영상의 Title의 색을 정한다.
         >>> Default: "limegreen"
+        img_size: 출력되는 영상의 크기를 정한다.
+        >>> Default: 12
         ----------------------------------------------------------------
         
         
@@ -45,6 +47,7 @@ class dicom_Viewer:
         """
         self.dcm_directory_path = dcm_directory_path
         self.title_color = title_color
+        self.img_size = img_size
         self.img_arr = None
         self.header_dict = None
         self.only_slide_number = None
@@ -67,7 +70,7 @@ class dicom_Viewer:
             dcm_array, _ = get_dicom_metaData_and_image(dcm_file_path)
             dcm_array = min_max_scaling(dcm_array)
             
-            plt.figure(figsize=(10, 10))
+            plt.figure(figsize=(self.img_size, self.img_size))
             plt.imshow(dcm_array, cmap='gray')
             
             title = f"Slide number: {slide_num+1}/{total_slide_num}"
@@ -106,7 +109,7 @@ class dicom_Viewer:
                 idx = python_idx  # 디렉터리 내 슬라이드의 순서를 표기한다.
             )
         
-        plt.figure(figsize=(10, 10))
+        plt.figure(figsize=(self.img_size, self.img_size))
         plt.imshow(dcmImage, cmap='gray')
         plt.title(title, fontsize = 20, pad = 20, color=self.title_color)
         plt.show()
@@ -162,7 +165,7 @@ class dicom_Viewer:
                 idx = idx
             )
 
-        plt.figure(figsize=(10, 10))
+        plt.figure(figsize=(self.img_size, self.img_size))
         plt.imshow(cut_img, cmap="gray")
         plt.title(title, fontsize = 20, pad = 20, color=self.title_color)
 
