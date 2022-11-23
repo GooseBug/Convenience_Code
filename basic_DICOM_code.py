@@ -14,8 +14,6 @@ from IPython.display import clear_output
 
 
 
-
-
 def get_dicom_metaData_and_image(
     dcm_path: str
 ) -> Union[np.ndarray, pydicom.dataset.FileDataset]:
@@ -60,11 +58,16 @@ def min_max_scaling(np_array: np.ndarray) -> np.ndarray:
 class dicom_Viewer:
 
     def __init__(self, dcm_directory_path: str):
-        
+        """
+        주요 Method
+        print_sequentially
+        Slide_viewer
+        """
         self.dcm_directory_path = dcm_directory_path
         self.img_arr = None
         self.header_dict = None
         self.only_slide_number = None
+        self.title_color = None
 
         
         
@@ -89,7 +92,12 @@ class dicom_Viewer:
             
 
             
-    def Slide_viewer(self, slide_start_point: int = 0, only_slide_number: bool = True):
+    def Slide_viewer(
+        self,
+        slide_start_point: int = 0,
+        only_slide_number: bool = True,
+        title_color = "white"
+    ):
         """
         Slide를 이용하여 영상을 보여준다.
         ---------------------------------------------------
@@ -98,9 +106,15 @@ class dicom_Viewer:
         
         only_slide_number:
         >>> title에서 슬라이드의 번호만 보여줄 것인지 여부
+        
+        title_color:
+        >>> Slide에서 title의 색깔
         """
         self.img_arr, self.header_dict = self.extract_need_dicom_information()
         Depth = self.img_arr.shape[0] - 1
+        
+        # title의 색을 정의한다.
+        self.title_color = title_color
         
         # Slide 번호만 출력할 것인지
         self.only_slide_number = only_slide_number
@@ -132,7 +146,7 @@ class dicom_Viewer:
 
         plt.figure(figsize=(10, 10))
         plt.imshow(cut_img, cmap="gray")
-        plt.title(title, fontsize = 20, pad = 20)
+        plt.title(title, fontsize = 20, pad = 20, color=self.title_color)
 
         plt.show()
         
