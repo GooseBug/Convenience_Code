@@ -5,12 +5,13 @@ import pydicom
 from pydicom import dcmread, uid
 from pydicom.pixel_data_handlers import util
 
-
 import numpy as np
 import matplotlib.pyplot as plt
 
 import ipywidgets
 from IPython.display import clear_output
+
+pydicom.config.convert_wrong_length_to_UN = True
 
 
 
